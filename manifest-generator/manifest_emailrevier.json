@@ -1,0 +1,45 @@
+{
+  "metadata": {},
+  "spec": {
+    "input": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "The email content to be reviewed and corrected"
+        },
+        "target_audience": {
+          "type": "string",
+          "enum": [
+            "general",
+            "technical",
+            "business",
+            "academic"
+          ],
+          "description": "The target audience for the email, affecting the style of review"
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "correct": {
+          "type": "boolean",
+          "description": "Indicates whether the email is correct and requires no changes"
+        },
+        "corrected_email": {
+          "type": "string",
+          "description": "The corrected version of the email, if changes were necessary"
+        }
+      }
+    },
+    "config": {
+      "type": "object",
+      "properties": {
+        "root": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

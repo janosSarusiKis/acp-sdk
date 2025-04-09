@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "manifest_generator"
+version = "0.1.0"
+description = "Manifest generator for marked Python classes"
+authors = ["Janos Sarusi-Kis <janossk@cisco.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.12"
+pydantic = "^2.0.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

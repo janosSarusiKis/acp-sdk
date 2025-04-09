@@ -3,6 +3,7 @@
 from enum import Enum
 from typing import Any, Optional
 
+from manifest_generator import ManifestMarker
 from pydantic import BaseModel, Field, RootModel
 
 
@@ -12,7 +13,7 @@ class TargetAudience(Enum):
     business = 'business'
     academic = 'academic'
 
-
+@ManifestMarker.input
 class EmailReviewerInput(BaseModel):
     email: str = Field(
         ..., description='The email content to be reviewed and corrected'
@@ -22,7 +23,7 @@ class EmailReviewerInput(BaseModel):
         description='The target audience for the email, affecting the style of review',
     )
 
-
+@ManifestMarker.output
 class EmailReview(BaseModel):
     correct: bool = Field(
         ...,
@@ -33,6 +34,6 @@ class EmailReview(BaseModel):
         description='The corrected version of the email, if changes were necessary',
     )
 
-
+@ManifestMarker.config
 class ConfigSchema(RootModel[Any]):
     root: Any
