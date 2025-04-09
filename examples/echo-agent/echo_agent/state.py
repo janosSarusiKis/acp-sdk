@@ -5,6 +5,8 @@ from typing import Optional, TypedDict
 
 from pydantic import BaseModel, Field
 
+from manifest_generator import ManifestMarker
+
 
 class MsgType(Enum):
     human = "human"
@@ -18,16 +20,16 @@ class Message(BaseModel):
     )
     content: str = Field(..., description="the content of the message")
 
-
+@ManifestMarker.config
 class ConfigSchema(TypedDict):
     to_upper: bool
     to_lower: bool
 
-
+@ManifestMarker.input
 class InputState(BaseModel):
     messages: Optional[list[Message]] = None
 
-
+@ManifestMarker.output
 class OutputState(BaseModel):
     messages: Optional[list[Message]] = None
 

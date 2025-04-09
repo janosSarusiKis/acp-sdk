@@ -13,8 +13,7 @@
                 "type": "string",
                 "enum": [
                   "human",
-                  "assistant",
-                  "ai"
+                  "assistant"
                 ],
                 "description": "indicates the originator of the message, a human or an assistant"
               },
@@ -24,25 +23,41 @@
               }
             }
           }
-        },
-        "is_completed": {
-          "type": "boolean"
         }
       }
     },
     "output": {
       "type": "object",
       "properties": {
-        "final_email": {
-          "type": "string",
-          "description": "Final email produced by the mail composer"
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "human",
+                  "assistant"
+                ],
+                "description": "indicates the originator of the message, a human or an assistant"
+              },
+              "content": {
+                "type": "string",
+                "description": "the content of the message"
+              }
+            }
+          }
         }
       }
     },
     "config": {
       "type": "object",
       "properties": {
-        "test": {
+        "to_upper": {
+          "type": "boolean"
+        },
+        "to_lower": {
           "type": "boolean"
         }
       }

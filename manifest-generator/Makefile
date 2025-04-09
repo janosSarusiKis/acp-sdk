@@ -1,7 +1,8 @@
 .PHONY: generate-manifest
 
 location=../examples/mailcomposer/mailcomposer
-#location=./example/mailcomposer/mailcomposer
+#location=../examples/echo-agent/echo_agent
+#location=../examples/email_reviewer/email_reviewer
 
 generate-manifest:
 	@echo "Generating manifest..."
