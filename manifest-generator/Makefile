@@ -6,4 +6,4 @@ location=../examples/mailcomposer/mailcomposer
 
 generate-manifest:
 	@echo "Generating manifest..."
-	poetry run python -m manifest_generator.main $(location) -o $(if $(output),$(output),manifest.json)
+	poetry run generator $(location) -o $(if $(output),$(output),manifest.json) 

@@ -1,7 +1,18 @@
 import json
 import ast
+import logging
 from pathlib import Path
+import sys
 from typing import Dict, Any, Optional
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%H:%M:%S',
+    stream=sys.stdout,
+    force=True
+)
+logger = logging.getLogger(__name__)
 
 TYPE_MAP = {
     "str": {"type": "string"},
@@ -172,6 +183,7 @@ class ManifestBuilder(ast.NodeVisitor):
         return self.clean_ast_nodes(schema)
 
 def generate_manifest(location: str) -> Dict[str, Any]:
+    logger.info(f"Starting manifest generation from {location}")
     try:
         # Load base manifest
         base_manifest_path = Path(__file__).parent.parent.parent / "base-manifest.json"
@@ -190,6 +202,8 @@ def generate_manifest(location: str) -> Dict[str, Any]:
         
         if not python_files:
             raise ValueError(f"No Python files found in {location}")
+        
+        logger.info(f"Found {len(python_files)} Python files to process")
 
         # First pass: collect all type definitions
         for py_file in python_files:
@@ -218,6 +232,8 @@ def _process_file(file_path: Path, processor: callable):
 
 def _update_manifest(manifest: Dict[str, Any], builder: ManifestBuilder):
     """Update manifest with builder schemas"""
+
+    logger.info("Updating manifest with schemas")
     if builder.input_schema:
         manifest["spec"]["input"] = builder.input_schema
     if builder.output_schema:
@@ -229,6 +245,7 @@ def _update_manifest(manifest: Dict[str, Any], builder: ManifestBuilder):
 def main():
     import argparse
     parser = argparse.ArgumentParser()
+    sys.stdout.flush()  # Force flush stdout
     parser.add_argument("location", help="Location of the Python files to scan")
     parser.add_argument("--output", "-o", default="manifest.json", help="Output file path")
     args = parser.parse_args()
@@ -237,6 +254,8 @@ def main():
     
     with open(args.output, "w") as f:
         json.dump(manifest, f, indent=2)
+
+    logger.info(f"Manifest generated successfully at {args.output}")
 
 if __name__ == "__main__":
     main()
