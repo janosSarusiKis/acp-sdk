@@ -3,6 +3,17 @@ import ast
 from pathlib import Path
 from typing import Dict, Any, Optional
 
+TYPE_MAP = {
+    "str": {"type": "string"},
+    "int": {"type": "integer"},
+    "float": {"type": "number"},
+    "bool": {"type": "boolean"},
+}
+
+class ManifestGenerationError(Exception):
+    """Raised when manifest generation fails"""
+    pass
+
 class ManifestBuilder(ast.NodeVisitor):
     def __init__(self):
         self.input_schema = None
@@ -94,12 +105,6 @@ class ManifestBuilder(ast.NodeVisitor):
         type_info = {}
         
         if isinstance(node, ast.Name):
-            type_map = {
-                "str": {"type": "string"},
-                "int": {"type": "integer"},
-                "float": {"type": "number"},
-                "bool": {"type": "boolean"},
-            }
             # Check if it's a custom type we've collected
             if node.id in self.type_definitions:
                 type_info = self.type_definitions[node.id].copy()
@@ -113,7 +118,7 @@ class ManifestBuilder(ast.NodeVisitor):
                         )
                     type_info["properties"] = processed_properties
             else:
-                type_info = type_map.get(node.id, {"type": "object"})
+                type_info = TYPE_MAP.get(node.id, {"type": "object"})
         
         elif isinstance(node, ast.Subscript):
             if isinstance(node.value, ast.Name):
@@ -167,42 +172,58 @@ class ManifestBuilder(ast.NodeVisitor):
         return self.clean_ast_nodes(schema)
 
 def generate_manifest(location: str) -> Dict[str, Any]:
-    # Load base manifest
-    base_manifest_path = Path(__file__).parent.parent.parent / "base-manifest.json"
-    with open(base_manifest_path) as f:
-        manifest = json.load(f)
+    try:
+        # Load base manifest
+        base_manifest_path = Path(__file__).parent.parent.parent / "base-manifest.json"
+        if not base_manifest_path.exists():
+            raise FileNotFoundError(f"Base manifest not found at {base_manifest_path}")
+            
+        with open(base_manifest_path) as f:
+            manifest = json.load(f)
 
-    # Find all Python files in the location
-    path = Path(location)
-    builder = ManifestBuilder()
+        path = Path(location)
+        if not path.exists():
+            raise FileNotFoundError(f"Location not found: {location}")
+
+        builder = ManifestBuilder()
+        python_files = list(path.rglob("*.py"))
+        
+        if not python_files:
+            raise ValueError(f"No Python files found in {location}")
+
+        # First pass: collect all type definitions
+        for py_file in python_files:
+            _process_file(py_file, lambda tree: builder.collect_type_definitions(tree))
+
+        # Second pass: process decorated classes
+        for py_file in python_files:
+            _process_file(py_file, lambda tree: builder.visit(tree))
+
+        # Update manifest with schemas
+        _update_manifest(manifest, builder)
+        
+        return manifest
     
-    # First pass: collect all type definitions
-    for py_file in path.rglob("*.py"):
-        try:
-            with open(py_file, 'r') as f:
-                tree = ast.parse(f.read())
-                builder.collect_type_definitions(tree)
-        except Exception as e:
-            print(f"Warning: Could not parse {py_file}: {e}")
+    except Exception as e:
+        raise ManifestGenerationError(f"Failed to generate manifest: {str(e)}") from e
 
-    # Second pass: process decorated classes
-    for py_file in path.rglob("*.py"):
-        try:
-            with open(py_file, 'r') as f:
-                tree = ast.parse(f.read())
-                builder.visit(tree)
-        except Exception as e:
-            print(f"Warning: Could not parse {py_file}: {e}")
+def _process_file(file_path: Path, processor: callable):
+    """Process a single Python file"""
+    try:
+        with open(file_path, 'r') as f:
+            tree = ast.parse(f.read())
+            processor(tree)
+    except Exception as e:
+        print(f"Warning: Could not process {file_path}: {e}")
 
-    # Update manifest with schemas
+def _update_manifest(manifest: Dict[str, Any], builder: ManifestBuilder):
+    """Update manifest with builder schemas"""
     if builder.input_schema:
         manifest["spec"]["input"] = builder.input_schema
     if builder.output_schema:
         manifest["spec"]["output"] = builder.output_schema
     if builder.config_schema:
         manifest["spec"]["config"] = builder.config_schema
-
-    return manifest
 
 
 def main():
