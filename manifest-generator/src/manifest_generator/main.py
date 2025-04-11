@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 import sys
 from typing import Dict, Any, Optional
+import tomli
 
 logging.basicConfig(
     level=logging.INFO,
@@ -181,6 +182,42 @@ class ManifestBuilder(ast.NodeVisitor):
         
         # Clean up AST nodes recursively before returning
         return self.clean_ast_nodes(schema)
+    
+def _read_project_metadata(location: Path) -> Dict[str, Any]:
+    """Read metadata from pyproject.toml, supporting both Project and Poetry metadata"""
+    try:
+        # Look for pyproject.toml in the project root
+        pyproject_path = location.parent / "pyproject.toml"
+        if not pyproject_path.exists():
+            logger.warning("pyproject.toml not found, skipping metadata")
+            return {}
+
+        with open(pyproject_path, "rb") as f:
+            pyproject = tomli.load(f)
+            
+        # Try Project metadata first, fall back to Poetry metadata
+        metadata = pyproject.get("project", {})
+        
+        if not metadata:
+            logger.info("No Project metadata found, trying Poetry metadata")
+            metadata = pyproject.get("tool", {}).get("poetry", {})
+            
+        if not metadata:
+            logger.warning("No metadata found in pyproject.toml")
+            return {}
+            
+        return {
+            "metadata": {
+                "ref": {
+                    "name": metadata.get("name", ""),
+                    "version": metadata.get("version", "")
+                },
+                "description": metadata.get("description", "")
+            }
+        }
+    except Exception as e:
+        logger.error(f"Failed to read project metadata: {e}")
+        return {}
 
 def generate_manifest(location: str) -> Dict[str, Any]:
     logger.info(f"Starting manifest generation from {location}")
@@ -196,6 +233,10 @@ def generate_manifest(location: str) -> Dict[str, Any]:
         path = Path(location)
         if not path.exists():
             raise FileNotFoundError(f"Location not found: {location}")
+        
+        # Read and add metadata from pyproject.toml
+        metadata = _read_project_metadata(path)
+        manifest.update(metadata)
 
         builder = ManifestBuilder()
         python_files = list(path.rglob("*.py"))

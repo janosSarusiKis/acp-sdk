@@ -1,5 +1,11 @@
 {
-  "metadata": {},
+  "metadata": {
+    "ref": {
+      "name": "mailcomposer",
+      "version": "0.1.0"
+    },
+    "description": "Composes an email by collecting details through continuous user interaction until confirmation, then returns the finalized email text."
+  },
   "spec": {
     "input": {
       "type": "object",
@@ -13,51 +19,36 @@
                 "type": "string",
                 "enum": [
                   "human",
-                  "assistant"
+                  "assistant",
+                  "ai"
                 ],
                 "description": "indicates the originator of the message, a human or an assistant"
               },
               "content": {
                 "type": "string",
-                "description": "the content of the message"
+                "description": "Final email produced by the mail composer"
               }
             }
           }
+        },
+        "is_completed": {
+          "type": "boolean"
         }
       }
     },
     "output": {
       "type": "object",
       "properties": {
-        "messages": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": [
-                  "human",
-                  "assistant"
-                ],
-                "description": "indicates the originator of the message, a human or an assistant"
-              },
-              "content": {
-                "type": "string",
-                "description": "the content of the message"
-              }
-            }
-          }
+        "final_email": {
+          "type": "string",
+          "description": "Final email produced by the mail composer"
         }
       }
     },
     "config": {
       "type": "object",
       "properties": {
-        "to_upper": {
-          "type": "boolean"
-        },
-        "to_lower": {
+        "test": {
           "type": "boolean"
         }
       }
