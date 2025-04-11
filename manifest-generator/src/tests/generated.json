@@ -1,0 +1,72 @@
+{
+  "metadata": {
+    "ref": {
+      "name": "echo_agent",
+      "version": "0.1.0"
+    },
+    "description": "Echoes input to output."
+  },
+  "spec": {
+    "input": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "human",
+                  "assistant"
+                ],
+                "description": "indicates the originator of the message, a human or an assistant"
+              },
+              "content": {
+                "type": "string",
+                "description": "the content of the message"
+              }
+            }
+          }
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "human",
+                  "assistant"
+                ],
+                "description": "indicates the originator of the message, a human or an assistant"
+              },
+              "content": {
+                "type": "string",
+                "description": "the content of the message"
+              }
+            }
+          }
+        }
+      }
+    },
+    "config": {
+      "type": "object",
+      "properties": {
+        "to_upper": {
+          "type": "boolean"
+        },
+        "to_lower": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
