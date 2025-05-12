@@ -19,13 +19,12 @@ async def echo_agent(state: AgentState, config: RunnableConfig) -> Dict[str, Any
 
     # Note: subfields are not typed when running in the workflow server
     # so we fix that here.
-    messages = state.messages or []
 
-    if messages:
-        logger.debug(f"received messages: {messages}")
+    if state.messages:
+        logger.debug(f"received messages: {state.messages}")
         # Get last human message
         human_message = next(
-            filter(lambda m: m.type == MsgType.human, reversed(messages)),
+            filter(lambda m: m.type == MsgType.human, reversed(state.messages)),
             None,
         )
         if human_message is not None:
@@ -52,4 +51,4 @@ async def echo_agent(state: AgentState, config: RunnableConfig) -> Dict[str, Any
 
         interrupt_messages.append(answer_from_human)
 
-    return {"messages": messages + output_messages + interrupt_messages}
+    return {"messages": state.messages + output_messages + interrupt_messages}

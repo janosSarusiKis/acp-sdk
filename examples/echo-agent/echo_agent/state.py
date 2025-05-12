@@ -28,4 +28,4 @@ MessageList = RootModel[List[Message]]
 
 
 class AgentState(BaseModel):
-    messages: Optional[List[Message]] = None
+    messages: List[Message]
