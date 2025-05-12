@@ -60,6 +60,10 @@
           "title": "Messages"
         }
       },
+      "additionalProperties": false,
+      "required": [
+        "messages"
+      ],
       "title": "InputState",
       "type": "object"
     },
